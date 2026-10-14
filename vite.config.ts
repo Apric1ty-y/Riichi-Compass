@@ -14,7 +14,7 @@ export default ({ mode }: { mode: string }) =>
       VitePWA({
         injectRegister: "auto",
         registerType: "autoUpdate",
-        includeAssets: ["Chun.svg", "Chun192.png", "Chun512.png", "**/*.svg"],
+        includeAssets: ["Chun.svg", "Chun192.png", "Chun512.png", "**/*.svg", "fonts/*.woff2", "fonts/OFL.txt"],
         devOptions: {
           enabled: mode === "development",
         },
@@ -24,7 +24,7 @@ export default ({ mode }: { mode: string }) =>
           start_url: "/",
           display: "standalone",
           background_color: "#111827",
-          lang: "en",
+          lang: "zh-CN",
           scope: "/",
           description: "Riichi Mahjong Game Tracker",
           theme_color: "#111827",

@@ -6,17 +6,21 @@ import { useDb } from "../../providers/DbProvider";
 import Button from "../Button";
 import Counter from "../Counter";
 import CustomDialog from "../layout/CustomDialog";
+import useUiText from "../../hooks/useUiText";
 
 export function AdvancedDialog({
   gameId,
   game,
   onClose,
+  onEndGame,
 }: {
   gameId: string;
   game: Game;
   onClose: () => void;
+  onEndGame: () => void;
 }) {
   const { t } = useTranslation();
+  const u = useUiText();
   const db = useDb();
 
   const {
@@ -105,6 +109,7 @@ export function AdvancedDialog({
             })}
           </Counter>
         </div>
+        <Button onClick={onEndGame}>{u("结束对局")}</Button>
       </div>
     </CustomDialog>
   );

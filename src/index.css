@@ -1,2 +1,27 @@
 @import "tailwindcss";
 @custom-variant dark (&:where([data-theme=dark] *:not([data-theme=light])));
+
+@font-face {
+  font-family: "Riichi UI";
+  src: url("/fonts/noto-sans-sc-ui.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@theme {
+  --font-sans: "Riichi UI", sans-serif;
+}
+html { font-family: "Riichi UI", sans-serif; }
+.legacy-compass-center { scale: 1.15; }
+
+.legacy-compass-viewport {
+  width: 100%;
+  height: 100dvh;
+  padding: 6px;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+}
+.legacy-compass-stage {
+  transform-origin: top left;
+}

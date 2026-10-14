@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useEffect, useState } from "react";
+import { type CSSProperties, useContext, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { HiArrowLeft, HiArrowUp, HiCog } from "react-icons/hi";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -9,12 +9,18 @@ import CircleButton from "../components/CircleButton";
 import { AdvancedDialog } from "../components/compass/AdvancedDialog";
 import { DrawDialog } from "../components/compass/DrawDialog";
 import ScoreDisplay from "../components/compass/ScoreDisplay";
+import { ScoreDifferenceContext } from "../components/compass/ScoreDifferenceContext";
 import { ScoreUpdateDialog } from "../components/compass/ScoreUpdateDialog";
 import { WinnerDialog } from "../components/compass/WinnerDialog";
+import MatchResult from "../components/compass/MatchResult";
+import CustomDialog from "../components/layout/CustomDialog";
+import Button from "../components/Button";
 import BlocksShuffleThree from "../components/loading/react-svg-spinners/BlocksShuffleThree";
 import { type Game } from "../data/interfaces";
 import useLocalStorage from "../hooks/useLocalStorage";
+import useUiText from "../hooks/useUiText";
 import { getWindNameTranslated, nextWind } from "../lib/hand";
+import { changePlayerStat } from "../lib/match";
 import { type CompassState } from "../lib/states";
 import { useDb } from "../providers/DbProvider";
 
@@ -40,9 +46,9 @@ export default function Compass() {
   }, [game, navigate]);
 
   return (
-    <div className="h-screen w-screen bg-slate-200 text-black dark:bg-gray-900 dark:text-white">
+    <div className="h-dvh w-screen bg-slate-200 text-black dark:bg-gray-900 dark:text-white">
       {game == null ? (
-        <div className="flex h-screen w-screen flex-col items-center justify-center">
+        <div className="flex h-dvh w-screen flex-col items-center justify-center">
           <div className="h-24 w-24 fill-black dark:fill-white">
             <BlocksShuffleThree />
           </div>
@@ -50,7 +56,7 @@ export default function Compass() {
       ) : game.ok ? (
         <CompassWithGame locState={locState} game={game.value} />
       ) : (
-        <div className="flex h-screen w-screen flex-col items-center justify-center">
+        <div className="flex h-dvh w-screen flex-col items-center justify-center">
           <div className="font-mono">
             {t(
               "compass.gameIdDoesNotExist",
@@ -72,10 +78,32 @@ function CompassWithGame({
   game: Game;
 }) {
   const { t } = useTranslation();
+  const u = useUiText();
   const db = useDb();
   const navigate = useNavigate();
 
   const [useFourWayCompass] = useLocalStorage("useFourWayCompass");
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const [viewportSize, setViewportSize] = useState({
+    width: window.innerWidth - 12,
+    height: (window.visualViewport?.height ?? window.innerHeight) - 12,
+  });
+  useEffect(() => {
+    if (!viewportRef.current) return;
+    const observer = new ResizeObserver(([entry]) => {
+      setViewportSize({ width: entry.contentRect.width, height: entry.contentRect.height });
+    });
+    observer.observe(viewportRef.current);
+    return () => observer.disconnect();
+  }, [useFourWayCompass]);
+  const scale = Math.min(1, viewportSize.width / 600, viewportSize.height / 600);
+  const stageStyle = {
+    width: viewportSize.width / scale,
+    height: viewportSize.height / scale,
+    transform: `scale(${scale})`,
+    "--stage-width": `${viewportSize.width / scale}px`,
+    "--stage-height": `${viewportSize.height / scale}px`,
+  } as CSSProperties;
 
   const { roundWind, round, repeats, scores, riichi, riichiSticks, settings } =
     game;
@@ -87,6 +115,19 @@ function CompassWithGame({
   const [winner, setWinner] = useState<number | null>(null);
   const [openDrawDialog, setOpenDrawDialog] = useState(false);
   const [openAdvancedDialog, setOpenAdvancedDialog] = useState(false);
+  const [manualEnd, setManualEnd] = useState(false);
+  const [referenceIndex, setReferenceIndex] = useState<number | null>(null);
+  useEffect(() => {
+    const clear = () => setReferenceIndex(null);
+    window.addEventListener("pointerup", clear);
+    window.addEventListener("pointercancel", clear);
+    window.addEventListener("blur", clear);
+    return () => {
+      window.removeEventListener("pointerup", clear);
+      window.removeEventListener("pointercancel", clear);
+      window.removeEventListener("blur", clear);
+    };
+  }, []);
 
   const toggleRiichiStick = async (ix: number) => {
     if (riichi[ix]) {
@@ -98,6 +139,7 @@ function CompassWithGame({
         ...game,
         scores: scores_,
         riichiSticks: riichiSticks - 1,
+        playerStats: changePlayerStat(game, ix, "riichi", -1),
         riichi: riichi_,
       });
     } else {
@@ -109,15 +151,45 @@ function CompassWithGame({
         ...game,
         scores: scores_,
         riichiSticks: riichiSticks + 1,
+        playerStats: changePlayerStat(game, ix, "riichi", 1),
         riichi: riichi_,
       });
     }
   };
 
-  return useFourWayCompass !== "false" ? (
-    <div className="relative h-screen w-screen">
+  const dismissEnd = async () => {
+    setManualEnd(false);
+    await db.setGame(locState.id, { ...game, pendingEndReason: undefined });
+  };
+  const finishGame = async () => {
+    await db.setGame(locState.id, { ...game, pendingEndReason: undefined, endedAt: new Date().toISOString() });
+    setManualEnd(false);
+  };
+  const requestEnd = () => {
+    setOpenAdvancedDialog(false);
+    setManualEnd(true);
+  };
+  if (game.endedAt) {
+    return <MatchResult game={game} gameId={locState.id} onHome={() => void navigate("/", { replace: true })} />;
+  }
+
+  return (
+    <ScoreDifferenceContext.Provider value={{ referenceIndex, setReferenceIndex }}>
+      {(manualEnd || game.pendingEndReason) && scoreUpdater == null && winner == null && !openDrawDialog && !openAdvancedDialog && (
+        <CustomDialog title={u("结束对局")} onClose={() => void dismissEnd()}>
+          <div className="flex max-w-lg flex-col gap-4 text-xl">
+            <p>{u(game.pendingEndReason ?? "是否结束当前对局并查看结果？")}</p>
+            <p className="text-base">{u("结束后将锁定当前点数并显示对局结果。")}</p>
+            <Button onClick={() => void finishGame()}>{u("结束并查看结果")}</Button>
+            <Button onClick={() => void dismissEnd()}>{u("继续对局")}</Button>
+          </div>
+        </CustomDialog>
+      )}
+      {useFourWayCompass !== "false" ? (
+    <div ref={viewportRef} className="legacy-compass-viewport">
+    <div className="legacy-compass-stage relative" style={stageStyle}>
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2">
-        <div className="h-fit w-[min(70vh,70vw)]">
+        <div className="h-fit w-[min(calc(var(--stage-height)*0.8),calc(var(--stage-width)*0.8))]">
           <ScoreDisplayInCompass
             ix={0}
             oldScores={oldScores}
@@ -129,7 +201,7 @@ function CompassWithGame({
         </div>
       </div>
       <div className="absolute top-1/2 right-0 -translate-y-1/2">
-        <div className="h-[min(70vh,70vw)] w-fit rotate-180">
+        <div className="h-[min(calc(var(--stage-height)*0.8),calc(var(--stage-width)*0.8))] w-fit rotate-180">
           <ScoreDisplayInCompass
             vertical
             ix={1}
@@ -142,7 +214,7 @@ function CompassWithGame({
         </div>
       </div>
       <div className="absolute top-0 left-1/2 -translate-x-1/2">
-        <div className="h-fit w-[min(70vh,70vw)] rotate-180">
+        <div className="h-fit w-[min(calc(var(--stage-height)*0.8),calc(var(--stage-width)*0.8))] rotate-180">
           <ScoreDisplayInCompass
             ix={2}
             oldScores={oldScores}
@@ -155,7 +227,7 @@ function CompassWithGame({
       </div>
       {settings.sanma == null && (
         <div className="absolute top-1/2 left-0 -translate-y-1/2">
-          <div className="h-[min(70vh,70vw)] w-fit">
+          <div className="h-[min(calc(var(--stage-height)*0.8),calc(var(--stage-width)*0.8))] w-fit">
             <ScoreDisplayInCompass
               vertical
               ix={3}
@@ -197,15 +269,16 @@ function CompassWithGame({
         <AdvancedDialog
           gameId={locState.id}
           game={game}
+          onEndGame={requestEnd}
           onClose={() => setOpenAdvancedDialog(false)}
         />
       )}
       <div
         data-1c1
         className={clsx(
-          "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-xl bg-slate-300 shadow dark:bg-sky-900",
-          "portrait:h-[min(min(70vw,70vh),calc(100vh-16rem))] portrait:p-1.5 portrait:lg:h-[min(min(70vw,70vh),calc(100vh-24rem))] portrait:lg:px-2 portrait:lg:py-2",
-          "landscape:w-[min(min(70vw,70vh),calc(100vw-16rem))] landscape:p-1.5 landscape:lg:w-[min(min(70vw,70vh),calc(100vw-24rem))] landscape:lg:px-2 landscape:lg:py-2",
+          "legacy-compass-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-xl bg-slate-300 shadow dark:bg-sky-900",
+          "portrait:h-[min(min(calc(var(--stage-width)*0.7),calc(var(--stage-height)*0.7)),calc(var(--stage-height)-16rem))] portrait:p-1.5 portrait:lg:h-[min(min(calc(var(--stage-width)*0.7),calc(var(--stage-height)*0.7)),calc(var(--stage-height)-24rem))] portrait:lg:px-2 portrait:lg:py-2",
+          "landscape:w-[min(min(calc(var(--stage-width)*0.7),calc(var(--stage-height)*0.7)),calc(var(--stage-width)-16rem))] landscape:p-1.5 landscape:lg:w-[min(min(calc(var(--stage-width)*0.7),calc(var(--stage-height)*0.7)),calc(var(--stage-width)-24rem))] landscape:lg:px-2 landscape:lg:py-2",
         )}
       >
         <div
@@ -231,12 +304,13 @@ function CompassWithGame({
           <span
             className={clsx(
               "flex items-center justify-between gap-y-2 text-xl lg:text-4xl",
-              "portrait:flex-col-reverse portrait:[writing-mode:vertical-lr]",
+              "portrait:flex-col portrait:rotate-90",
               "landscape:flex-col",
             )}
           >
             <span>
               {getWindNameTranslated(roundWind)(t)} {round}
+              <PointBalanceLight scores={scores} riichiSticks={riichiSticks} isSanma={settings.sanma != null} />
             </span>
             <span className="flex flex-row items-center justify-center gap-x-4">
               <span className="flex flex-row items-center justify-center gap-x-2">
@@ -300,13 +374,14 @@ function CompassWithGame({
         </div>
       </div>
     </div>
+    </div>
   ) : (
     <div className="flex flex-row justify-center">
-      <div className="h-screen w-full overflow-y-auto">
-        <div className="flex min-h-screen w-full flex-col items-center justify-center gap-y-2 p-2">
+      <div className="h-dvh w-full overflow-y-auto">
+        <div className="flex min-h-dvh w-full flex-col items-center justify-center gap-y-2 p-2">
           <div
             data-1c1
-            className="h-fit w-[min(70vh,70vw)] rounded-xl bg-slate-300 p-1.5 shadow lg:px-2 lg:py-2 dark:bg-sky-900"
+            className="h-fit w-[min(calc(var(--stage-height)*0.8),calc(var(--stage-width)*0.8))] rounded-xl bg-slate-300 p-1.5 shadow lg:px-2 lg:py-2 dark:bg-sky-900"
           >
             <div className="flex w-full flex-row items-center justify-between gap-4">
               <div className="flex flex-col items-center justify-center">
@@ -320,6 +395,7 @@ function CompassWithGame({
               <span className="flex flex-col items-center justify-between gap-y-2 text-xl lg:text-4xl">
                 <span>
                   {getWindNameTranslated(roundWind)(t)} {round}
+              <PointBalanceLight scores={scores} riichiSticks={riichiSticks} isSanma={settings.sanma != null} />
                 </span>
                 <span className="flex flex-row items-center justify-center gap-x-4">
                   <span className="flex flex-row items-center justify-center gap-x-2">
@@ -352,7 +428,7 @@ function CompassWithGame({
               </div>
             </div>
           </div>
-          <div className="h-fit w-[min(70vh,70vw)]">
+          <div className="h-fit w-[min(calc(var(--stage-height)*0.8),calc(var(--stage-width)*0.8))]">
             <ScoreDisplayInCompass
               ix={0}
               oldScores={oldScores}
@@ -363,7 +439,7 @@ function CompassWithGame({
               playerLabel="P1"
             />
           </div>
-          <div className="h-fit w-[min(70vh,70vw)]">
+          <div className="h-fit w-[min(calc(var(--stage-height)*0.8),calc(var(--stage-width)*0.8))]">
             <ScoreDisplayInCompass
               ix={1}
               oldScores={oldScores}
@@ -374,7 +450,7 @@ function CompassWithGame({
               playerLabel="P2"
             />
           </div>
-          <div className="h-fit w-[min(70vh,70vw)]">
+          <div className="h-fit w-[min(calc(var(--stage-height)*0.8),calc(var(--stage-width)*0.8))]">
             <ScoreDisplayInCompass
               ix={2}
               oldScores={oldScores}
@@ -386,7 +462,7 @@ function CompassWithGame({
             />
           </div>
           {settings.sanma == null && (
-            <div className="h-fit w-[min(70vh,70vw)]">
+            <div className="h-fit w-[min(calc(var(--stage-height)*0.8),calc(var(--stage-width)*0.8))]">
               <ScoreDisplayInCompass
                 ix={3}
                 oldScores={oldScores}
@@ -429,10 +505,42 @@ function CompassWithGame({
         <AdvancedDialog
           gameId={locState.id}
           game={game}
+          onEndGame={requestEnd}
           onClose={() => setOpenAdvancedDialog(false)}
         />
       )}
     </div>
+      )}
+    </ScoreDifferenceContext.Provider>
+  );
+}
+
+function PointBalanceLight({
+  scores,
+  riichiSticks,
+  isSanma,
+}: {
+  scores: number[];
+  riichiSticks: number;
+  isSanma: boolean;
+}) {
+  const total = scores.reduce((sum, score) => sum + score, 0) + riichiSticks * 1000;
+  const expectedTotal = isSanma ? 35000 * 3 : 25000 * 4;
+  const balanced = total === expectedTotal;
+  const u = useUiText();
+  const message = u("点数校验{{status}}：玩家点数 + 供托 = {{total}} 点，应为 {{expected}} 点", {status:u(balanced ? "正常" : "异常"), total, expected:expectedTotal});
+  return (
+    <span
+      role="img"
+      aria-label={message}
+      title={message}
+      className={clsx(
+        "ms-2 inline-block h-3 w-3 rounded-full align-middle ring-2 ring-black/20 lg:h-4 lg:w-4",
+        balanced
+          ? "bg-green-400 shadow-[0_0_8px_#4ade80]"
+          : "bg-red-500 shadow-[0_0_8px_#ef4444]",
+      )}
+    />
   );
 }
 
@@ -456,13 +564,16 @@ function ScoreDisplayInCompass({
   playerLabel?: string;
 }) {
   const { bottomWind, scores, riichi, settings } = game;
+  const { referenceIndex, setReferenceIndex } = useContext(ScoreDifferenceContext);
   return (
     <ScoreDisplay
       vertical={vertical}
       score={scores[ix]}
       oldScore={oldScores?.[ix]}
       riichi={riichi[ix]}
-      isSanma={settings.sanma != null}
+      difference={referenceIndex == null || referenceIndex === ix ? null : scores[referenceIndex] - scores[ix]}
+      onDifferenceStart={() => setReferenceIndex(ix)}
+      onDifferenceEnd={() => setReferenceIndex(null)}
       seatWind={nextWind(bottomWind, ix, settings.sanma != null)}
       onScoreClick={onScoreClick}
       onTileClick={onTileClick}

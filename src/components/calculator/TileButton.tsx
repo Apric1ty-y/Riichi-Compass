@@ -1,7 +1,6 @@
 import clsx from "clsx";
 import { useMediaQuery } from "react-responsive";
 
-import useLocalStorage from "../../hooks/useLocalStorage";
 import { type TileCode } from "../../lib/hand";
 import Tile from "../Tile";
 
@@ -27,11 +26,9 @@ export default function TileButton<T extends TileCode | "00" = TileCode>({
   onClick?: (tile: T) => void;
 }) {
   const isLg = useMediaQuery({ query: "(min-width: 1024px)" });
-  const [brightTiles] = useLocalStorage("brightTiles");
 
   return forced ? (
     <div
-      data-theme={brightTiles === "true" ? "light" : null}
       className={clsx(
         small && !isLg ? "rounded-md" : "rounded-xl",
         "shadow shadow-gray-400 dark:shadow-gray-800",
@@ -57,7 +54,6 @@ export default function TileButton<T extends TileCode | "00" = TileCode>({
         })
       }
       disabled={disabled}
-      data-theme={brightTiles === "true" ? "light" : null}
       className={clsx(
         small && !isLg ? "rounded-md" : "rounded-xl",
         "shadow shadow-gray-400 disabled:opacity-50 dark:shadow-gray-800",

@@ -3,14 +3,17 @@ import { useLiveQuery } from "dexie-react-hooks";
 
 import { none, type Option, some } from "../../lib/option";
 import { DefaultSettings, type ScoreSettings } from "../../lib/settings";
-import { type Game, type IRepository, type PartialGame } from "../interfaces";
+import { normalizeMatch } from "../../lib/match";
+import { type Game, type HistoricMatch, type IRepository, type PartialGame } from "../interfaces";
+import { participantHistory } from "../../lib/history";
 
 type Game_ = Game & {
   id: string;
 };
 
 function toGame(game: Game_): Game {
-  return {
+  return normalizeMatch({
+    ...game,
     roundWind: game.roundWind,
     round: game.round,
     repeats: game.repeats,
@@ -19,11 +22,12 @@ function toGame(game: Game_): Game {
     riichiSticks: game.riichiSticks,
     riichi: game.riichi,
     settings: game.settings,
-  };
+  });
 }
 
 function fromGame(id: string, game: Game): Game_ {
   return {
+    ...game,
     id,
     roundWind: game.roundWind,
     round: game.round,
@@ -86,6 +90,7 @@ function fromSettings(id: string, settings: ScoreSettings): ScoreSettings_ {
 class Db extends Dexie {
   public games!: Table<Game_>;
   public settings!: Table<ScoreSettings_>;
+  public history!: Table<HistoricMatch>;
 }
 
 const db = new Db("riichi-tracker");
@@ -162,7 +167,37 @@ db.version(5)
       });
   });
 
+db.version(6).stores({ games: "++id", settings: "++id", history: "id, ownerId, endedAt" });
+db.version(7).stores({ games: "++id", settings: "++id", history: "id, ownerId, endedAt" }).upgrade(async tx => {
+  const table = tx.table<HistoricMatch>("history");
+  const oldRecords = await table.toArray();
+  const allRecords = oldRecords.flatMap(record => participantHistory(record.game, record.savedAt));
+  await table.bulkPut(allRecords);
+  const retainedIds = new Set(allRecords.map(record => record.id));
+  await table.bulkDelete(oldRecords.filter(record => !retainedIds.has(record.id)).map(record => record.id));
+});
+
 export const repository: IRepository = {
+  useHistory(ownerId) {
+    return useLiveQuery(() => (ownerId == null ? db.history.toCollection() : db.history.where("ownerId").equals(ownerId)).reverse().sortBy("endedAt"), [ownerId]);
+  },
+  async archiveGame(id) {
+    await db.transaction("rw", db.games, db.history, async () => {
+      const stored = await db.games.get(id);
+      if (!stored?.endedAt) throw new Error("Match must be finished before saving");
+      const game = toGame(stored);
+      const records = participantHistory(game);
+      await db.history.bulkPut(records);
+      await db.games.put(fromGame(id, records[0].game));
+    });
+  },
+  async discardFinishedGame(id) {
+    await db.transaction("rw", db.games, async () => {
+      const stored = await db.games.get(id);
+      if (!stored?.endedAt) throw new Error("Match must be finished before discarding");
+      await db.games.put({ ...stored, historyDisposition: "discarded" });
+    });
+  },
   async getGame(id): Promise<Option<Game>> {
     const games = await db.games.where("id").equals(id).toArray();
     if (!games.length) {
@@ -187,7 +222,27 @@ export const repository: IRepository = {
     return some(toGame(game));
   },
   async setGame(id: string, game: Game): Promise<void> {
-    await db.games.put(fromGame(id, game));
+    await db.transaction("rw", db.games, async () => {
+      const stored = await db.games.get(id);
+      const previous = stored && stored.sessionId === game.sessionId ? toGame(stored) : null;
+      const next = normalizeMatch(game);
+      if (previous && !previous.endedAt) {
+        const changed = previous.scores.some((score, i) => score !== next.scores[i]);
+        const settled = previous.handSequence !== next.handSequence;
+        next.scoreHistory = previous.scoreHistory;
+        if (changed || settled) {
+          next.scoreHistory = [...(previous.scoreHistory ?? []), {
+            at: new Date().toISOString(),
+            label: settled ? `第${next.handSequence}局结算` : "点数变动",
+            scores: [...next.scores], riichiSticks: next.riichiSticks,
+          }];
+        }
+        if (changed && next.scores.some((score) => score < 0)) {
+          next.pendingEndReason = "有玩家点数小于 0，是否结束对局？";
+        }
+      }
+      await db.games.put(fromGame(id, next));
+    });
   },
   async getSettings(id: string): Promise<Option<ScoreSettings>> {
     const settings = await db.settings.where("id").equals(id).toArray();

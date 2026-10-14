@@ -23,3 +23,11 @@ dev-dist
 *.njsproj
 *.sln
 *.sw?
+
+# Local verification artifacts and private environment configuration
+/.font-build-tools/
+/*.png
+/check-*.cjs
+/download-font.mjs
+.env*
+!.env.example

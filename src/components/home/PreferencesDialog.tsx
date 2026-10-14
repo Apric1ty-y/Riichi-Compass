@@ -5,6 +5,7 @@ import { HiChip, HiQuestionMarkCircle } from "react-icons/hi";
 
 import useLocalStorage from "../../hooks/useLocalStorage";
 import { updateTheme } from "../../lib/util";
+import { useDb } from "../../providers/DbProvider";
 import Button from "../Button";
 import CustomDialog from "../layout/CustomDialog";
 import { HTrans } from "../text/Localized";
@@ -17,14 +18,27 @@ export default function PreferencesDialog({
   const { t, i18n } = useTranslation();
 
   const [theme, setTheme] = useLocalStorage("theme");
-  const [language, setLanguage] = useLocalStorage("language");
-  const [showTileName, setShowTileName] = useLocalStorage("showTileName");
-  const [brightTiles, setBrightTiles] = useLocalStorage("brightTiles");
+  const [kiriageMangan, setKiriageMangan] = useLocalStorage("kiriageMangan");
+  const db = useDb();
+  const changeKiriageMangan = async (enabled: boolean) => {
+    setKiriageMangan(String(enabled));
+    const game = await db.getGame("$tools");
+    if (game.ok) {
+      await db.setGame("$tools", {
+        ...game.value,
+        settings: { ...game.value.settings, kiriageMangan: enabled },
+      });
+    }
+  };
 
   return (
     <CustomDialog title={t("home.preferences")} onClose={onClose}>
       <div className="flex flex-col items-center justify-center gap-y-8">
         <div className="flex flex-col items-center justify-center gap-y-2">
+          <SettingRow name={t("settings.language.$")} help={<HTrans i18nKey="settings.language.help" />}>
+            <Button active={i18n.language === "zh-CN"} onClick={() => { localStorage.setItem("language", "zh-CN"); void i18n.changeLanguage("zh-CN"); }}>中文</Button>
+            <Button active={i18n.language === "en"} onClick={() => { localStorage.setItem("language", "en"); void i18n.changeLanguage("en"); }}>English</Button>
+          </SettingRow>
           <SettingRow
             name={t("settings.theme.$")}
             help={
@@ -55,81 +69,16 @@ export default function PreferencesDialog({
             </Button>
           </SettingRow>
           <SettingRow
-            name={t("settings.language.$")}
-            help={
-              <span>
-                <HTrans i18nKey="settings.language.help" />
-              </span>
-            }
+            name={t("settings.roundedMangan.$")}
+            help={<HTrans i18nKey="settings.roundedMangan.help" />}
+            compass
+            last
           >
-            <Button
-              active={language === "en" || language == null}
-              onClick={() => {
-                setLanguage("en");
-                void i18n.changeLanguage("en");
-              }}
-            >
-              English
+            <Button active={kiriageMangan === "true"} onClick={() => void changeKiriageMangan(true)}>
+              {i18n.language === "en" ? "On" : "开"}
             </Button>
-            <Button
-              active={language === "weeb"}
-              onClick={() => {
-                setLanguage("weeb");
-                void i18n.changeLanguage("weeb");
-              }}
-            >
-              English (Japanese)
-            </Button>
-            {/* <Button
-              active={language === "ja"}
-              onClick={() => {
-                setLanguage("ja");
-                void i18n.changeLanguage("ja");
-              }}
-            >
-              日本語
-            </Button> */}
-          </SettingRow>
-          <SettingRow
-            name={t("settings.showTileNames.$")}
-            help={
-              <span>
-                <HTrans i18nKey="settings.showTileNames.help" />
-              </span>
-            }
-          >
-            <Button
-              active={showTileName === "true"}
-              onClick={() => setShowTileName("true")}
-            >
-              {t("settings.common.show")}
-            </Button>
-            <Button
-              active={showTileName !== "true"}
-              onClick={() => setShowTileName("false")}
-            >
-              {t("settings.common.hide")}
-            </Button>
-          </SettingRow>
-          <SettingRow
-            name={t("settings.brightTiles.$")}
-            help={
-              <span>
-                <HTrans i18nKey="settings.brightTiles.help" />
-              </span>
-            }
-          >
-            <Button
-              active={brightTiles === "true"}
-              onClick={() => setBrightTiles("true")}
-            >
-              {t("settings.common.enable")}
-            </Button>
-            <Button
-              active={brightTiles !== "true"}
-              onClick={() => setBrightTiles("false")}
-            >
-              {t("settings.common.disable")}
+            <Button active={kiriageMangan !== "true"} onClick={() => void changeKiriageMangan(false)}>
+              {i18n.language === "en" ? "Off" : "关"}
             </Button>
           </SettingRow>
         </div>

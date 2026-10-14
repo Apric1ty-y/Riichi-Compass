@@ -1,0 +1,452 @@
+{
+  "calc": {
+    "addDoraIndicator": "添加宝牌指示牌",
+    "addUradoraIndicator": "添加里宝牌指示牌",
+    "doraIndicators": "宝牌<Sm>指示牌</Sm>",
+    "error": {
+      "gameDoesNotExist": "错误：对局 {{id}} 不存在。",
+      "settingsIdDoesNotExist": "错误：设置 {{id}} 不存在。"
+    },
+    "extraDora": "宝牌（{{extraDoraHan}}）",
+    "extraYaku": "役（{{extraYakuHan}}）",
+    "extraYakuman": "役满（{{extraYakuman}}）",
+    "fromAll": "每家支付 <H>{{points}}</H>",
+    "fromBoth": "两家各支付 <H>{{points}}</H>",
+    "fromLiable": "责任者支付 <H>{{points}}</H>",
+    "fuReference": {
+      "$": "符数参考",
+      "fu": {
+        "base": "底符 <H>20</H> 符。",
+        "closedRon": "门前荣和 <H>+10</H> 符。",
+        "ifNonSimple": "含幺九牌时 <H>×2</H>。",
+        "ifOpen": "明刻时 <H>÷2</H>。",
+        "openPinfu": "副露手牌按 20 符计算时，和牌 <H>+2</H> 符。",
+        "perKan": "每个杠子的基础值为 <H>+16</H> 符：",
+        "perTriplet": "每个刻子的基础值为 <H>+4</H> 符：",
+        "sevenPairs": "七对子固定为 <H>25</H> 符，不进位。",
+        "singleWait": "单一和牌张的等待形式 <H>+2</H> 符。",
+        "tsumo": "自摸 <H>+2</H> 符，平和除外。",
+        "tsumoNoRinshanFu": "自摸 <H>+2</H> 符，平和与岭上开花除外。",
+        "yakuhaiPair": "每个役牌雀头 <H>+2</H> 符；连风牌再 <H>+2</H> 符。",
+        "yakuhaiPairNoDouble": "每个役牌雀头 <H>+2</H> 符。"
+      },
+      "roundUp": "最后向上进位到 10 符。"
+    },
+    "kita": "拔北（{{nukidora}}）",
+    "notEnoughTiles": "牌数不足，无法组成完整和牌。",
+    "noYaku": "无役",
+    "pattern": {
+      "base": "底符 <H>{{fu}}</H> 符。",
+      "chiitoi": "七对子固定 <H>{{fu}}</H> 符。",
+      "closedRon": "门前荣和 <H>+{{fu}}</H> 符。",
+      "openPinfu": "副露手牌按 20 符计算，和牌 <H>+{{fu}}</H> 符。",
+      "pinfuTsumo": "平和自摸按 <H>{{fu}}</H> 符计算。",
+      "quad": {
+        "closed": "暗杠 <H>+{{fu}}</H> 符。",
+        "closedYaochuu": "幺九牌暗杠 <H>+{{fu}}</H> 符。",
+        "open": "明杠 <H>+{{fu}}</H> 符。",
+        "openYaochuu": "幺九牌明杠 <H>+{{fu}}</H> 符。"
+      },
+      "rinshanTsumo": "岭上开花自摸 <H>+{{fu}}</H> 符。",
+      "triplet": {
+        "closed": "暗刻 <H>+{{fu}}</H> 符。",
+        "closedYaochuu": "幺九牌暗刻 <H>+{{fu}}</H> 符。",
+        "open": "明刻 <H>+{{fu}}</H> 符。",
+        "openYaochuu": "幺九牌明刻 <H>+{{fu}}</H> 符。"
+      },
+      "tsumo": "自摸 <H>+{{fu}}</H> 符。",
+      "wait": {
+        "kanchan": "坎张等待 <H>+{{fu}}</H> 符。",
+        "penchan": "边张等待 <H>+{{fu}}</H> 符。",
+        "ryanmen": "两面等待 <H>+{{fu}}</H> 符。",
+        "shanpon": "双碰等待 <H>+{{fu}}</H> 符。",
+        "tanki": "单骑等待 <H>+{{fu}}</H> 符。"
+      },
+      "yakuhaiPair": {
+        "double": "连风牌雀头 <H>+{{fu}}</H> 符。",
+        "single": "役牌雀头 <H>+{{fu}}</H> 符。"
+      }
+    },
+    "points": "点数",
+    "pointsCalculator": "点数计算器",
+    "pointsToTake": "收取点数",
+    "round": "场次",
+    "scoreCalculator": "和牌计分器",
+    "seat": "自风",
+    "selectFu": "选择符数",
+    "selectHan": "选择番数",
+    "tilesNotValid": "这些牌无法组成有效的和牌。",
+    "transferCalculatedScore": "按计算结果转移点数",
+    "transferPoints": "转移点数",
+    "uradoraIndicators": "里宝牌<Sm>指示牌</Sm>"
+  },
+  "common": {
+    "baiman": "倍满",
+    "chii": "吃",
+    "clear": "清除",
+    "close": "关闭",
+    "closedKan": "暗杠",
+    "continue": "继续",
+    "dark": "深色",
+    "east": "东",
+    "fu": "符",
+    "fuvalue": "<H>{{fu}}</H> 符",
+    "green": "发",
+    "han": "番",
+    "haneman": "跳满",
+    "hanfuvalue": "<H>{{han}}</H> 番 <H>{{fu}}</H> 符",
+    "hanvalue": "<H>{{han}}</H> 番",
+    "kan": "杠",
+    "kazoeyakuman": "累计役满",
+    "light": "浅色",
+    "mangan": "满贯",
+    "north": "北",
+    "pon": "碰",
+    "red": "中",
+    "ron": "荣和",
+    "sanbaiman": "三倍满",
+    "south": "南",
+    "start": "开始",
+    "submit": "确认",
+    "tsumo": "自摸",
+    "west": "西",
+    "white": "白",
+    "yakuman": {
+      "1": "役满",
+      "2": "双倍役满",
+      "3": "三倍役满",
+      "4": "四倍役满",
+      "5": "五倍役满",
+      "6": "六倍役满",
+      "over": "{{value}} 倍役满"
+    }
+  },
+  "compass": {
+    "abort": "途中流局",
+    "calculateHand": "计算手牌",
+    "chombo": "诈和／犯规",
+    "dealerRepeat": "庄家连庄",
+    "dealtinPlayer": "放铳者",
+    "drawType": "流局类型",
+    "editScore": "修改点数",
+    "exhaust": "荒牌流局",
+    "gameIdDoesNotExist": "错误：对局 {{id}} 不存在。",
+    "handleDraws": "处理流局",
+    "otherActions": "其他操作",
+    "pao": "包牌",
+    "paysOutReverseMangan": "按<H>反向满贯</H>支付。",
+    "playerInViolation": "犯规玩家",
+    "pointDistribution": "点数分配",
+    "readyPlayers": "听牌玩家",
+    "redoesTheRound": "本局从头重打。",
+    "repeatRound": "重打本局",
+    "repeats": "本场（{{repeats}}）",
+    "responsiblePlayer": "责任者",
+    "riichi": "立直",
+    "riichiSticks": "供托（{{riichiSticks}}）",
+    "rotateSeats": "轮转座位",
+    "scoreRepeatSticks": "结算本场棒",
+    "scoreRiichiSticks": "结算供托棒",
+    "seatRotation": "座位轮转",
+    "transferPoints": "转移点数"
+  },
+  "home": {
+    "calculator": "计分器",
+    "fourwayCompass": "四向场风盘",
+    "help": {
+      "addRiichiSticks": "点击<H>立直</H>按钮增加供托棒。",
+      "createCompass": "点击<H>新建对局</H>创建一个<H>场风盘</H>。",
+      "drawsAndRepeats": "点击<H>中央风牌</H>处理流局与本场。",
+      "howToInput": "初学者可以输入完整手牌，熟练者可以直接输入番数与符数。<br />可在计分器<H>右上角</H>切换。<br />也可在设置中选择默认输入方式。",
+      "manuallyEditRounds": "点击<H>齿轮按钮</H>可手动修改座位、局数、本场和供托。",
+      "manuallyEditScores": "点击<H>玩家点数</H>可手动修改分数。",
+      "placePhone": "把手机放在牌桌中央即可使用！",
+      "transferScores": "点击<H>和牌者的风牌</H>并使用<H>计分器</H>转移点数。",
+      "useCalculator": "也可以脱离对局，单独使用<H>计分器</H>。",
+      "useReference": "在<H>参考资料</H>中查看麻将牌、役种和点数表。"
+    },
+    "initialScore": "初始点数",
+    "keepTrackOfYourGames": "记录你的日麻对局",
+    "newGame": "新建对局",
+    "preferences": "偏好设置",
+    "preferHanAndFuInput": "优先使用番符输入",
+    "reference": "参考资料",
+    "riichiTracker": "日麻计分盘",
+    "settings": "规则设置",
+    "yourSeatWind": "你的自风"
+  },
+  "reference": {
+    "bamboo": "索子",
+    "canBeRounded": "部分规则允许将<H>3</H>番<H>60</H>符和<H>4</H>番<H>30</H>符按<H>满贯</H>计算。",
+    "characters": "万子",
+    "circles": "筒子",
+    "closedOnly": "仅门前",
+    "dealer": "庄家",
+    "dealerRon": "庄家荣和",
+    "dealerTsumo": "庄家自摸",
+    "dragons": "三元牌",
+    "easy": "常用",
+    "formula": {
+      "baimanBasicPoints": "<H>8～10</H> 番为<H>倍满</H>，基本点 4000。",
+      "calculateBasicPoints": "使用 <Mono>符×2<Sup>2+番</Sup></Mono> 计算基本点。",
+      "common20": "常见的副露手牌、门前自摸，以及平和荣和通常为<H>30 符</H>。",
+      "common30": "门前荣和，以及大多数副露对对和通常为<H>40 符</H>。",
+      "common40": "平和自摸为<H>20 符</H>。",
+      "commonFuValues": "常见符数：",
+      "countFuValue": "根据手牌构成计算符数，并向上进位至 10 符：",
+      "countHanValue": "确认役种和宝牌，合计番数。",
+      "dealerRon": "庄家荣和：放铳者支付基本点的 <H>6 倍</H>。",
+      "dealerTsumo": "庄家自摸：其余各家支付基本点的 <H>2 倍</H>。",
+      "fu": {
+        "base": "底符 <H>20</H> 符。",
+        "closedRon": "门前荣和 <H>+10</H> 符。",
+        "ifNonSimple": "幺九牌刻子或杠子 <H>×2</H>。",
+        "ifOpen": "明刻或明杠 <H>÷2</H>。",
+        "openPinfu": "副露手牌若按 20 符计算，和牌 <H>+2</H> 符。",
+        "perKan": "每个杠子的基础值为 <H>+16</H> 符：",
+        "perTriplet": "每个刻子的基础值为 <H>+4</H> 符：",
+        "sevenPairs": "七对子固定为 <H>25</H> 符，不进位。",
+        "singleWait": "边张、坎张或单骑等待 <H>+2</H> 符。",
+        "tsumo": "自摸 <H>+2</H> 符，平和除外；部分规则中岭上开花也可能不加。",
+        "yakuhaiPair": "役牌雀头 <H>+2</H> 符；部分规则中连风牌雀头为 <H>+4</H> 符。"
+      },
+      "hanemanBasicPoints": "<H>6～7</H> 番为<H>跳满</H>，基本点 3000。",
+      "ifBasicPointsAboveMangan": "不超过 <H>4</H> 番且基本点超过 2000 时，固定按基本点 2000 的<H>满贯</H>计算。",
+      "ifKiriageMangan": "采用切上满贯规则时，将基本点 1920 进位至 2000。",
+      "ifManganSkip": "达到 <H>5</H> 番后无需计算符数，直接跳至第 8 步：",
+      "ifYakumanSkip": "役满每倍按基本点 8000 计算，直接跳至第 8 步。",
+      "manganBasicPoints": "<H>5</H> 番为<H>满贯</H>，基本点 2000。",
+      "nonDealerRon": "闲家荣和：放铳者支付基本点的 <H>4 倍</H>。",
+      "nonDealerTsumo": "闲家自摸：其他闲家各付基本点的 <H>1 倍</H>，庄家付 <H>2 倍</H>。",
+      "sanbaimanBasicPoints": "<H>11～12</H> 番为<H>三倍满</H>，基本点 6000。",
+      "theGeneralFormula": "通用计算公式如下：",
+      "transferOnWin": "和牌时按下列倍数计算，并向上进位至 100 点：",
+      "yakumanBasicPoints": "<H>13+</H> 番按<H>役满</H>处理，每倍役满基本点 8000。"
+    },
+    "gameMode": {
+      "$": "游戏模式",
+      "fourPlayer": "四人麻将",
+      "threePlayer": "三人麻将"
+    },
+    "hideYakuman": "隐藏役满",
+    "legend": "图例",
+    "local": "地方役",
+    "minusIfOpen": "副露减 1 番",
+    "nonDealer": "闲家",
+    "nonDealerRon": "闲家荣和",
+    "nonDealerTsumo": "闲家自摸",
+    "notYaku": "不构成役",
+    "onlyEasy": "仅显示常用役",
+    "reference": "参考资料",
+    "scoringTable": "点数表",
+    "scoringTableSanma": "三麻通常使用与四麻相同的点数表；采用北家损失补偿时，原本应由北家支付的点数会重新分配。",
+    "showLocal": "显示地方役",
+    "tiles": "麻将牌",
+    "tsumoPoints": {
+      "$": "自摸点数",
+      "bisection": "补足北家份额",
+      "loss": "自摸损"
+    },
+    "winds": "风牌",
+    "winloss": "和牌／放铳",
+    "yakuList": "役种列表"
+  },
+  "settings": {
+    "affectsTheCompass": "会影响场风盘",
+    "afterKanFu": {
+      "$": "岭上自摸符",
+      "help": "岭上开花时，是否计算自摸所得的 <B><H>2</H> 符</B>。",
+      "twoFu": "2 符",
+      "zeroFu": "0 符"
+    },
+    "allGreensDragon": {
+      "$": "绿一色是否必须含发",
+      "help": "绿一色是否必须包含绿发。",
+      "optional": "可不含发",
+      "required": "必须含发"
+    },
+    "brightTiles": {
+      "$": "明亮牌面",
+      "help": "在深色主题中使用浅色麻将牌。"
+    },
+    "common": {
+      "allow": "允许",
+      "disable": "关闭",
+      "disallow": "不允许",
+      "enable": "开启",
+      "hide": "隐藏",
+      "show": "显示"
+    },
+    "copyFromCalculator": "从计分器复制",
+    "countedYakuman": {
+      "$": "累计役满",
+      "help": "至少 <H>13</H> 番的牌按<B>役满</B>还是<B>三倍满</B>计算。",
+      "sanbaiman": "三倍满",
+      "yakuman": "役满"
+    },
+    "doubleWindFu": {
+      "$": "连风牌雀头符",
+      "fourFu": "4 符",
+      "help": "同时为场风与自风的雀头按 <B><H>4</H> 符</B>还是 <B><H>2</H> 符</B>计算。",
+      "twoFu": "2 符"
+    },
+    "doubleYakuman": {
+      "$": "双倍役满",
+      "help": "是否将部分特殊役满按<H>双倍役满</H>计算。<br />包括："
+    },
+    "gameMode": {
+      "$": "游戏模式",
+      "fourPlayer": "四人麻将",
+      "help": "选择玩家人数。<br /><B>三人麻将</B>采用三麻规则：不能吃牌、不使用二至八万，并可拔北。",
+      "threePlayer": "三人麻将"
+    },
+    "language": {
+      "$": "语言",
+      "help": "界面显示语言。"
+    },
+    "northTiles": {
+      "$": "北牌规则",
+      "help": "三麻中，北牌可以作为<B>拔北</B>，也可以不论风位均作为<B>役牌</B>。拔北模式会显示北牌计数。",
+      "kita": "拔北",
+      "yakuhai": "役牌"
+    },
+    "noYakuDora": {
+      "$": "无役时计算宝牌",
+      "help": "无役时是否仍显示宝牌番数。"
+    },
+    "noYakuFu": {
+      "$": "无役时计算符数",
+      "help": "无役时是否仍计算符数；此时番数为 <H>0</H>。"
+    },
+    "openAllSimples": {
+      "$": "食断",
+      "help": "断幺九在副露后是否仍然成立。"
+    },
+    "otherScoring": {
+      "$": "额外计分项",
+      "help": "显示额外役、宝牌和役满计数器。<br />可用于额外赤牌、其他宝牌或尚未支持的地方役。"
+    },
+    "paoPayment": {
+      "$": "包牌支付",
+      "help": "显示包牌点数分配功能。<br />自摸时责任者支付全部；荣和时责任者与放铳者各付一半。"
+    },
+    "redFives": {
+      "$": "赤五牌",
+      "disable": "无赤五牌",
+      "enable": "{{fives}} 枚赤五牌",
+      "help": "组牌时可使用的赤五牌数量。"
+    },
+    "roundedMangan": {
+      "$": "切上满贯",
+      "help": "是否将 <H>4</H> 番 <H>30</H> 符与 <H>3</H> 番 <H>60</H> 符进位为<H>满贯</H>。",
+      "noRounding": "不切上",
+      "rounded": "切上满贯"
+    },
+    "showTileNames": {
+      "$": "显示牌名",
+      "help": "在麻将牌角落显示牌名缩写。"
+    },
+    "theme": {
+      "$": "主题",
+      "help": "界面颜色主题。再次点击当前主题可恢复跟随系统。"
+    },
+    "toggleAll": "全部切换",
+    "toggleLocalYaku": "切换地方役",
+    "toggleYaku": {
+      "$": "役种开关",
+      "help": "选择计分器中可使用的役种。<br /><B>可选役</B>默认开启，可按规则关闭；<B>地方役</B>默认关闭。",
+      "local": "地方役（+{{length}}）",
+      "optional": "可选役（-{{length}}）"
+    },
+    "tsumoPoints": {
+      "$": "三麻自摸点数",
+      "bisection": "补足北家份额",
+      "help": "三麻自摸的点数分配。<br /><B>自摸损</B>保留四麻基础点，和牌者少收北家份额；<B>补足北家份额</B>则由另外两家补足。",
+      "loss": "自摸损"
+    },
+    "yakumanStacking": {
+      "$": "役满复合",
+      "help": "是否允许多个<H>役满</H>复合；关闭后最高仅按单倍役满计算，双倍役满也会关闭。"
+    }
+  },
+  "yaku": {
+    "akadora": { "$": "赤宝牌", "help": "" },
+    "bakazeEast": { "$": "场风 东", "help": "" },
+    "bakazeNorth": { "$": "场风 北", "help": "" },
+    "bakazeSouth": { "$": "场风 南", "help": "" },
+    "bakazeWest": { "$": "场风 西", "help": "" },
+    "benikujaku": { "$": "红孔雀", "help": "仅由索子的红色牌（1、5、7、9）和红中组成。" },
+    "chankan": { "$": "抢杠", "help": "在他人将碰牌加杠时荣和该牌。" },
+    "chiihou": { "$": "地和", "help": "闲家在第一次摸牌时自摸；此前不能发生鸣牌。" },
+    "chiitoitsu": { "$": "七对子", "help": "由七组对子组成，是通常四组面子加雀头结构的例外。" },
+    "chiniisou": { "$": "清一色", "help": "手牌仅由同一种数牌组成。" },
+    "chinroutou": { "$": "清老头", "help": "手牌全部由一万、九万、一筒、九筒、一索和九索组成。" },
+    "chun": { "$": "役牌 中", "help": "" },
+    "chuurenpoutou": { "$": "九莲宝灯", "help": "门前清一色中具有 <B>1112345678999</B> 的结构，再加同花色任意一张牌。" },
+    "daichiishin": { "$": "大七星", "help": "由七种字牌各组成一对的七对子；不与字一色复合。" },
+    "daichikurin": { "$": "大竹林", "help": "由二至八索各组成一对的七对子。" },
+    "daisangen": { "$": "大三元", "help": "白、发、中三种三元牌全部组成刻子或杠子。" },
+    "daisharin": { "$": "大车轮", "help": "由二至八筒各组成一对的七对子。" },
+    "daisuurin": { "$": "大数邻", "help": "由二至八万各组成一对的七对子。" },
+    "daisuushii": { "$": "大四喜", "help": "东、南、西、北全部组成刻子或杠子。" },
+    "dora": { "$": "宝牌", "help": "" },
+    "doubleriichi": { "$": "双立直", "help": "在自己的第一次舍牌时立直并投入 1000 点；此前不能发生鸣牌。" },
+    "haiteiraoyue": { "$": "海底摸月", "help": "以牌山最后一张可摸牌自摸和牌。" },
+    "haku": { "$": "役牌 白", "help": "" },
+    "hatsu": { "$": "役牌 发", "help": "" },
+    "honchantaiyaochuu": { "$": "混全带幺九", "help": "每组面子和雀头都含幺九牌，并且手牌中包含字牌。" },
+    "honiisou": { "$": "混一色", "help": "手牌仅由一种数牌和字牌组成。" },
+    "honroutou": { "$": "混老头", "help": "手牌全部由幺九牌和字牌组成。" },
+    "houteiraoyui": { "$": "河底捞鱼", "help": "荣和牌山最后一次摸牌后的舍牌。" },
+    "hyakumangoku": { "$": "百万石", "help": "清一色万子手牌中，所有数牌点数总和至少为 100。" },
+    "iipeikou": { "$": "一杯口", "help": "门前手牌中含有两组完全相同的顺子。" },
+    "ikkitsuukan": { "$": "一气通贯", "help": "同一花色中同时具有 <B>123</B>、<B>456</B>、<B>789</B> 三组顺子。" },
+    "ippatsu": { "$": "一发", "help": "立直后在自己下一次舍牌前和牌，且期间未发生鸣牌。" },
+    "isshokusanjun": { "$": "一色三同顺", "help": "同一花色中含有三组完全相同的顺子。" },
+    "jikazeEast": { "$": "自风 东", "help": "" },
+    "jikazeNorth": { "$": "自风 北", "help": "" },
+    "jikazeSouth": { "$": "自风 南", "help": "" },
+    "jikazeWest": { "$": "自风 西", "help": "" },
+    "junchantaiyaochuu": { "$": "纯全带幺九", "help": "每组面子和雀头都含幺九数牌，且不含字牌。" },
+    "junseichuurenpoutou": { "$": "纯正九莲宝灯", "help": "听牌时恰好为同花色的 <B>1112345678999</B>，形成九面听。" },
+    "kita": { "$": "拔北", "help": "" },
+    "kokuiisou": { "$": "黑一色", "help": "仅由筒子的黑色牌（2、4、8）和风牌组成。" },
+    "kokushimusou": { "$": "国士无双", "help": "十三种幺九牌和字牌各一张，再加其中任意一张组成对子。" },
+    "kokushimusoujuusanmenmachi": { "$": "国士无双十三面", "help": "听牌时十三种幺九牌和字牌各一张，可和其中任意一种。" },
+    "menzenchintsumohou": { "$": "门前清自摸和", "help": "门前状态下自摸和牌。" },
+    "otakazeNorth": { "$": "客风 北", "help": "" },
+    "other": {
+      "dora": { "$": "宝牌" },
+      "kazehai": { "$": "役牌（风牌）" },
+      "kita": { "$": "拔北" },
+      "nagashimangan": { "$": "流局满贯" },
+      "sangenpai": { "$": "役牌（三元牌）" }
+    },
+    "otherDora": { "$": "其他宝牌" },
+    "otherYaku": { "$": "其他役" },
+    "otherYakuman": { "$": "其他役满" },
+    "pinfu": { "$": "平和" },
+    "renhou": { "$": "人和" },
+    "riichi": { "$": "立直" },
+    "rinshankaihou": { "$": "岭上开花" },
+    "ryanpeikou": { "$": "二杯口" },
+    "ryuuiisou": { "$": "绿一色" },
+    "sanankou": { "$": "三暗刻" },
+    "sankantsu": { "$": "三杠子" },
+    "sanrenkou": { "$": "三连刻" },
+    "sanshokudoujun": { "$": "三色同顺" },
+    "sanshokudoukou": { "$": "三色同刻" },
+    "shiiaruraotai": { "$": "四杠散了" },
+    "shousangen": { "$": "小三元" },
+    "shousuushii": { "$": "小四喜" },
+    "suuankan": { "$": "四杠子" },
+    "suuankou": { "$": "四暗刻" },
+    "suuankoutankimachi": { "$": "四暗刻单骑" },
+    "tanyaochuu": { "$": "断幺九" },
+    "tenhou": { "$": "天和" },
+    "toitoihou": { "$": "对对和" },
+    "tsuuiisou": { "$": "字一色" },
+    "uradora": { "$": "里宝牌" },
+    "uumensai": { "$": "五门齐" }
+  }
+}

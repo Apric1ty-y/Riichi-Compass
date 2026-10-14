@@ -5,12 +5,15 @@ import { useTranslation } from "react-i18next";
 import { type Wind } from "../../lib/hand";
 import TileButton from "../calculator/TileButton";
 import H from "../text/H";
+import useUiText from "../../hooks/useUiText";
 
 export default function ScoreDisplay({
   score,
   oldScore = score,
   seatWind,
-  isSanma,
+  difference = null,
+  onDifferenceStart,
+  onDifferenceEnd,
   vertical = false,
   riichi = false,
   onScoreClick,
@@ -21,7 +24,9 @@ export default function ScoreDisplay({
   score: number;
   oldScore?: number;
   seatWind: Wind;
-  isSanma: boolean;
+  difference?: number | null;
+  onDifferenceStart?: () => void;
+  onDifferenceEnd?: () => void;
   vertical?: boolean;
   riichi?: boolean;
   onScoreClick?: () => void;
@@ -30,6 +35,7 @@ export default function ScoreDisplay({
   playerLabel?: string;
 }) {
   const { t } = useTranslation();
+  const u = useUiText();
   const [animDone, setAnimDone] = useState(false);
   useEffect(() => {
     if (oldScore !== score) {
@@ -37,24 +43,12 @@ export default function ScoreDisplay({
       setAnimDone(false);
     }
   }, [score, oldScore]);
-  const dices = isSanma
-    ? [
-        [1, 4, 7, 10],
-        [2, 5, 8, 11],
-        [3, 6, 9, 12],
-      ][Number(seatWind) - 1]
-    : [
-        [1, 5, 9],
-        [2, 6, 10],
-        [3, 7, 11],
-        [4, 8, 12],
-      ][Number(seatWind) - 1];
   return (
     <div
       className={clsx(
         vertical
-          ? "flex h-full w-31 flex-row-reverse lg:w-45"
-          : "flex h-31 w-full flex-col lg:h-45",
+          ? "flex h-full w-39 flex-row-reverse lg:w-53"
+          : "flex h-39 w-full flex-col lg:h-53",
         "items-center justify-center gap-1",
       )}
     >
@@ -62,16 +56,16 @@ export default function ScoreDisplay({
         <button
           onClick={onRiichiClick}
           className={clsx(
-            "rounded-xl border border-gray-800 text-center text-sm shadow md:text-lg lg:text-2xl",
+            "flex items-center justify-center rounded-xl border border-gray-800 text-center text-lg font-semibold shadow md:text-xl lg:text-2xl",
             vertical
-              ? "h-40 w-9 px-1.5 py-8 lg:h-80 lg:w-14"
-              : "h-9 w-40 px-8 py-1.5 lg:h-14 lg:w-80",
+              ? "h-64 w-9 px-1.5 py-8 lg:h-104 lg:w-14"
+              : "h-9 w-64 px-8 py-1.5 lg:h-14 lg:w-104",
             riichi
               ? "bg-amber-500 enabled:hover:bg-amber-600 dark:bg-amber-700 dark:enabled:hover:bg-amber-800"
               : "bg-gray-50 enabled:hover:bg-gray-200 dark:bg-gray-500 dark:enabled:hover:bg-gray-600",
           )}
         >
-          <span className={clsx(vertical ? "[writing-mode:vertical-rl]" : "")}>
+          <span className={clsx("inline-block shrink-0 whitespace-nowrap", vertical && "rotate-90")}>
             {t("compass.riichi")}
           </span>
         </button>
@@ -89,35 +83,33 @@ export default function ScoreDisplay({
           "items-center justify-between rounded-xl bg-slate-300 shadow dark:bg-sky-900",
         )}
       >
-        <span
+        <div
           className={clsx(
-            isSanma
-              ? vertical
-                ? "h-5 w-16 [writing-mode:vertical-rl] lg:w-20"
-                : "h-16 w-5 lg:h-20"
-              : vertical
-                ? "h-5 w-12 [writing-mode:vertical-rl] lg:w-20"
-                : "h-12 w-5 lg:h-20",
-            isSanma ? "lg:text-sm" : "lg:text-lg",
-            "text-center text-xs font-semibold text-slate-900 dark:text-slate-400",
+            vertical ? "mx-2 -my-2 rotate-90" : "",
+            "flex flex-col items-center justify-center",
           )}
         >
-          {dices.map((x, i, a) => (
-            <>
-              {x}
-              {i !== a.length && <br />}
-            </>
-          ))}
-        </span>
+          <TileButton
+            onClick={onTileClick}
+            red={seatWind === "1"}
+            tile={`${seatWind}z`}
+          ></TileButton>
+        </div>
         <button
           className={clsx(
-            "text-4xl font-bold lg:text-6xl",
-            vertical ? "h-52 w-12 lg:w-20" : "h-12 w-52 lg:h-20",
+            "flex items-center justify-center font-semibold leading-none",
+            String(difference ?? score).length > 5 ? "text-4xl lg:text-6xl" : "text-[3.5rem] lg:text-[5rem]",
+            vertical ? "h-60 w-20 lg:w-28" : "h-20 w-60 lg:h-28",
           )}
+          disabled={difference != null}
+          aria-label={u("修改点数")}
+          data-score-display
           onClick={onScoreClick}
         >
-          <span className={clsx(vertical ? "[writing-mode:vertical-rl]" : "")}>
-            {animDone || oldScore === score ? (
+          <span className={clsx("inline-block shrink-0 whitespace-nowrap", vertical && "rotate-90")}>
+            {difference != null ? (
+              <span className="text-yellow-400">{difference === 0 ? "000" : difference > 0 ? `+${difference}` : difference}</span>
+            ) : animDone || oldScore === score ? (
               <H>{score}</H>
             ) : oldScore > score ? (
               <H.Red>
@@ -142,18 +134,35 @@ export default function ScoreDisplay({
             )}
           </span>
         </button>
-        <div
+        <button
           className={clsx(
-            vertical ? "mx-2 -my-2 rotate-90" : "",
-            "flex flex-col items-center justify-center",
+            "flex shrink-0 touch-none select-none items-center justify-center rounded-xl border border-gray-800 bg-gray-50 text-xl font-semibold shadow dark:bg-gray-500 lg:text-3xl",
+            vertical ? "h-14 w-20 lg:h-20 lg:w-28" : "h-20 w-14 lg:h-28 lg:w-20",
           )}
+          aria-label={u("按住查看点差")}
+          onPointerDown={(event) => {
+            if (event.button !== 0) return;
+            event.preventDefault();
+            event.currentTarget.setPointerCapture(event.pointerId);
+            onDifferenceStart?.();
+          }}
+          onPointerUp={onDifferenceEnd}
+          onPointerCancel={onDifferenceEnd}
+          onLostPointerCapture={onDifferenceEnd}
+          onBlur={onDifferenceEnd}
+          onContextMenu={(event) => event.preventDefault()}
+          onKeyDown={(event) => {
+            if (event.key === " " || event.key === "Enter") {
+              event.preventDefault();
+              onDifferenceStart?.();
+            }
+          }}
+          onKeyUp={(event) => {
+            if (event.key === " " || event.key === "Enter") onDifferenceEnd?.();
+          }}
         >
-          <TileButton
-            onClick={onTileClick}
-            red={seatWind === "1"}
-            tile={`${seatWind}z`}
-          ></TileButton>
-        </div>
+          <span className={clsx("inline-block shrink-0 whitespace-nowrap text-3xl lg:text-4xl", vertical && "rotate-90")}>±</span>
+        </button>
       </div>
     </div>
   );

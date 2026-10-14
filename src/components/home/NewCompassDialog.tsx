@@ -5,13 +5,13 @@ import { useNavigate } from "react-router-dom";
 import useLocalStorage from "../../hooks/useLocalStorage";
 import { type Wind } from "../../lib/hand";
 import { DefaultSettings } from "../../lib/settings";
+import { loadPtSettings } from "../../lib/pt";
 import { type CompassState } from "../../lib/states";
 import { replicate } from "../../lib/util";
 import { useDb } from "../../providers/DbProvider";
 import Button from "../Button";
 import WindSelect from "../calculator/WindSelect";
 import CustomDialog from "../layout/CustomDialog";
-import SettingsDialog from "../settings/SettingsDialog";
 import ToggleOnOff from "../ToggleOnOff";
 
 export function NewCompassDialog({ onClose }: { onClose: () => void }) {
@@ -19,7 +19,6 @@ export function NewCompassDialog({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate();
   const db = useDb();
 
-  const [openedSettings, setOpenedSettings] = useState(false);
   const [newCompassInitialScore, setNewCompassInitialScore] = useState(25000);
   const [newCompassBottomWind, setNewCompassBottomWind] = useState<Wind>("1");
   const [newCompassSettings, setNewCompassSettings] = useState(DefaultSettings);
@@ -27,11 +26,15 @@ export function NewCompassDialog({ onClose }: { onClose: () => void }) {
 
   const [useFourWayCompass, setUseFourWayCompass] =
     useLocalStorage("useFourWayCompass");
-  const [prefersQuick, setPrefersQuick] = useLocalStorage("prefersQuick");
 
   const submitNewCompass = async () => {
     await db.setGame("$tools", {
+      // getRandomValues also works on the phone's plain-HTTP LAN address.
+      sessionId: Array.from(crypto.getRandomValues(new Uint32Array(4)), (n) => n.toString(16).padStart(8, "0")).join("-"),
       bottomWind: newCompassBottomWind,
+      startedAt: new Date().toISOString(),
+      initialBottomWind: newCompassBottomWind,
+      ptSettings: loadPtSettings(newCompassSettings.sanma ? 3 : 4),
       roundWind: "1",
       round: 1,
       repeats: 0,
@@ -41,7 +44,10 @@ export function NewCompassDialog({ onClose }: { onClose: () => void }) {
       ),
       riichiSticks: 0,
       riichi: replicate(false, newCompassSettings.sanma ? 3 : 4),
-      settings: newCompassSettings,
+      settings: {
+        ...newCompassSettings,
+        kiriageMangan: localStorage.getItem("kiriageMangan") === "true",
+      },
     });
     const state: CompassState = { t: "load", id: "$tools" };
     void navigate("/compass", { state, replace: true });
@@ -96,37 +102,17 @@ export function NewCompassDialog({ onClose }: { onClose: () => void }) {
             {t("home.fourwayCompass")}
           </ToggleOnOff>
           <ToggleOnOff
-            toggled={prefersQuick === "true"}
-            onToggle={() =>
-              setPrefersQuick(prefersQuick === "true" ? "false" : "true")
-            }
+            toggled={newCompassSettings.sanma != null}
+            onToggle={(enabled) => {
+              setNewCompassSettings({
+                ...newCompassSettings,
+                sanma: enabled ? "loss" : null,
+              });
+              setNewCompassInitialScore(enabled ? 35000 : 25000);
+            }}
           >
-            {t("home.preferHanAndFuInput")}
+            {t("settings.gameMode.threePlayer")}
           </ToggleOnOff>
-          <ToggleOnOff
-            toggled={openedSettings}
-            onToggle={() => setOpenedSettings(true)}
-          >
-            {t("home.settings")}
-          </ToggleOnOff>
-          {openedSettings && (
-            <SettingsDialog
-              allowCopy
-              inCalculator={false}
-              settings={newCompassSettings}
-              onSettingsChange={(s) => {
-                setNewCompassSettings(s);
-                if (s.sanma == null) {
-                  setNewCompassInitialScore(25000);
-                } else {
-                  setNewCompassInitialScore(35000);
-                }
-              }}
-              onClose={() => {
-                setOpenedSettings(false);
-              }}
-            />
-          )}
         </form>
         <Button
           onClick={() => {

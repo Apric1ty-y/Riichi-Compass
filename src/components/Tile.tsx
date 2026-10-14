@@ -1,7 +1,6 @@
 import clsx from "clsx";
 import { useMediaQuery } from "react-responsive";
 
-import useLocalStorage from "../hooks/useLocalStorage";
 import { useTheme } from "../hooks/useTheme";
 import type { TileCode } from "../lib/hand";
 import { shortForTile, svgForTile } from "../lib/tiles";
@@ -16,11 +15,9 @@ export default function Tile({
   rotate?: boolean;
 }) {
   const theme = useTheme();
-  const [showTileName] = useLocalStorage("showTileName");
   const isLg = useMediaQuery({ query: "(min-width: 1024px)" });
-  const [brightTiles] = useLocalStorage("brightTiles");
 
-  const [text, label, color] =
+  const [text, , color] =
     tile === "00" ? ([" ", " "] as const) : shortForTile(tile);
 
   if (small && !isLg) {
@@ -45,7 +42,7 @@ export default function Tile({
     );
   }
   const file = (tile === "00" ? svgForTile("5z") : svgForTile(tile))[
-    brightTiles === "true" ? 0 : theme === "dark" ? 1 : 0
+    theme === "dark" ? 1 : 0
   ];
   return (
     <div
@@ -73,11 +70,6 @@ export default function Tile({
               : "h-16 w-12 lg:h-20 lg:w-15",
         )}
       ></img>
-      {showTileName === "true" && (
-        <div className="absolute top-0 right-0 m-1 text-sm font-extrabold text-white [-webkit-text-stroke:1px_black] text-shadow-black text-shadow-sm">
-          {label}
-        </div>
-      )}
     </div>
   );
 }

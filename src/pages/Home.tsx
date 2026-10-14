@@ -5,15 +5,19 @@ import { useNavigate } from "react-router-dom";
 
 import Button from "../components/Button";
 import CircleButton from "../components/CircleButton";
+import { PtSettingsDialog } from "../components/compass/PtResult";
+import SaveHistoryDialog from "../components/compass/SaveHistoryDialog";
 import { NewCompassDialog } from "../components/home/NewCompassDialog";
 import PreferencesDialog from "../components/home/PreferencesDialog";
 import { HTrans } from "../components/text/Localized";
-import { DefaultSettings } from "../lib/settings";
-import { type CalculatorState, type CompassState } from "../lib/states";
+import { type CompassState } from "../lib/states";
+import { loadPtSettings } from "../lib/pt";
+import useUiText from "../hooks/useUiText";
 import { useDb } from "../providers/DbProvider";
 
 export default function App() {
   const { t } = useTranslation();
+  const u = useUiText();
   const navigate = useNavigate();
 
   const db = useDb();
@@ -21,20 +25,11 @@ export default function App() {
 
   const [openNewCompassDialog, setOpenNewCompassDialog] = useState(false);
   const [openPreferencesDialog, setOpenPreferencesDialog] = useState(false);
+  const [openPtSettings, setOpenPtSettings] = useState(false);
+  const [ptCount, setPtCount] = useState(4);
 
   return (
     <div className="min-h-screen bg-slate-200 text-black dark:bg-gray-900 dark:text-white">
-      <div className="fixed top-0 right-0">
-        <a
-          href="https://github.com/1Computer1/riichi-tracker"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img
-            src={`${import.meta.env.BASE_URL}github/github-corner-right.svg`}
-          />
-        </a>
-      </div>
       <div className="fixed top-2 left-2 flex flex-col gap-y-2 lg:top-4 lg:left-4">
         <CircleButton
           onClick={() => {
@@ -57,34 +52,16 @@ export default function App() {
               <Button onClick={() => setOpenNewCompassDialog(true)}>
                 {t("home.newGame")}
               </Button>
-              <Button
-                disabled={toolsGame == null || !toolsGame.ok}
+              {toolsGame?.ok && !toolsGame.value.endedAt && <Button
                 onClick={() => {
                   const state: CompassState = { t: "load", id: "$tools" };
                   void navigate("/compass", { state, replace: true });
                 }}
               >
                 {t("common.continue")}
-              </Button>
-              <Button
-                onClick={async () => {
-                  const res = await db.getSettings("$global");
-                  if (!res.ok) {
-                    await db.setSettings("$global", DefaultSettings);
-                  }
-                  const state: CalculatorState = { t: "load", id: "$global" };
-                  void navigate("/calculator", { state, replace: true });
-                }}
-              >
-                {t("home.calculator")}
-              </Button>
-              <Button
-                onClick={() => {
-                  void navigate("/reference", { replace: true });
-                }}
-              >
-                {t("home.reference")}
-              </Button>
+              </Button>}
+              <Button onClick={() => void navigate("/history")}>{u("历史对局")}</Button>
+              <Button onClick={() => setOpenPtSettings(true)}>{u("PT 设置")}</Button>
             </div>
           </div>
         </div>
@@ -96,15 +73,6 @@ export default function App() {
             <HTrans i18nKey="home.help.addRiichiSticks" />
           </li>
           <li>
-            <HTrans i18nKey="home.help.transferScores" />
-          </li>
-          <li>
-            <HTrans i18nKey="home.help.howToInput" />
-          </li>
-          <li>
-            <HTrans i18nKey="home.help.drawsAndRepeats" />
-          </li>
-          <li>
             <HTrans i18nKey="home.help.manuallyEditScores" />
           </li>
           <li>
@@ -112,12 +80,6 @@ export default function App() {
           </li>
           <li>
             <HTrans i18nKey="home.help.placePhone" />
-          </li>
-          <li>
-            <HTrans i18nKey="home.help.useCalculator" />
-          </li>
-          <li>
-            <HTrans i18nKey="home.help.useReference" />
           </li>
         </ul>
       </div>
@@ -127,6 +89,22 @@ export default function App() {
       {openPreferencesDialog && (
         <PreferencesDialog onClose={() => setOpenPreferencesDialog(false)} />
       )}
+      {toolsGame?.ok && toolsGame.value.endedAt && !toolsGame.value.historyDisposition && <SaveHistoryDialog
+        game={toolsGame.value} gameId="$tools"
+        onStay={() => void navigate("/compass", { state: { t: "load", id: "$tools" } })}
+        onDone={() => { /* Live query hides the resolved prompt. */ }}
+      />}
+      {openPtSettings && <PtSettingsDialog
+        key={ptCount}
+        count={ptCount}
+        value={loadPtSettings(ptCount)}
+        onCountChange={setPtCount}
+        onClose={() => setOpenPtSettings(false)}
+        onSave={async value => {
+          localStorage.setItem(`pt-settings-${ptCount}`, JSON.stringify(value));
+          setOpenPtSettings(false);
+        }}
+      />}
     </div>
   );
 }

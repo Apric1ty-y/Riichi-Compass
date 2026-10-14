@@ -4,6 +4,7 @@ import { useImmer } from "use-immer";
 
 import { type Game } from "../../data/interfaces";
 import { nextWind } from "../../lib/hand";
+import { recordHand, settledHand } from "../../lib/match";
 import { replicate } from "../../lib/util";
 import { useDb } from "../../providers/DbProvider";
 import Button from "../Button";
@@ -70,6 +71,8 @@ export function DrawDialog({
       await db.setGame(gameId, {
         ...game,
         bottomWind: repeat ? bottomWind : nextWind(bottomWind, -1, isSanma),
+        ...settledHand(game),
+        handResults: recordHand(game, scores_, { kind: "draw", handNumber: (game.handSequence ?? 0) + 1, tenpai: [...tenpaiPlayers] }),
         roundWind: repeat
           ? roundWind
           : round === roundCap
@@ -85,6 +88,7 @@ export function DrawDialog({
       await db.setGame(gameId, {
         ...game,
         repeats: game.repeats + 1,
+        handResults: recordHand(game, game.scores, { kind: "abort" }),
         riichi: replicate(false, isSanma ? 3 : 4),
       });
     } else {
@@ -112,6 +116,7 @@ export function DrawDialog({
         scores: scores_,
         riichi: replicate(false, isSanma ? 3 : 4),
         riichiSticks: game.riichiSticks - game.riichi.filter((x) => x).length,
+        handResults: recordHand(game, scores_, { kind: "chombo", violationPlayer }),
       });
       onScoreUpdate(game.scores);
     }

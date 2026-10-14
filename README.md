@@ -1,5 +1,7 @@
 # Riichi Tracker
 
+> This repository contains Apric1ty-y's modified version, updated on 2026-10-14. It adds Chinese/English UI, responsive compass layouts, PT scoring, per-hand results and browser-local match histories. See [中文说明](README.zh-CN.md) and [data and scoring notes](MATCH-RESULTS.md). It currently has no account login or cloud storage. The original AGPL-3.0-only license and third-party notices are retained. The upstream README follows below.
+
 A riichi mahjong hand calculator and interactive compass.
 Also includes a reference for yaku and scoring.
 

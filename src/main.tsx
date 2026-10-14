@@ -12,7 +12,7 @@ import { updateTheme } from "./lib/util";
 import Calculator from "./pages/Calculator";
 import Compass from "./pages/Compass";
 import Home from "./pages/Home";
-import Reference from "./pages/Reference";
+import History, { HistoryDetail } from "./pages/History";
 import { DbContext } from "./providers/DbProvider";
 
 updateTheme();
@@ -40,7 +40,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
               <Route path="/" element={<Home />}></Route>
               <Route path="/calculator" element={<Calculator />}></Route>
               <Route path="/compass" element={<Compass />}></Route>
-              <Route path="/reference" element={<Reference />}></Route>
+              <Route path="/history" element={<History />} />
+              <Route path="/history/:id" element={<HistoryDetail />} />
             </Routes>
           </HashRouter>
         </DbContext.Provider>
