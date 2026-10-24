@@ -13,6 +13,7 @@ const identity = (value: number) => value;
 export default function ScoreDisplay({
   score,
   oldScore = score,
+  animationDuration = 1000,
   seatWind,
   difference = null,
   onDifferenceStart,
@@ -26,6 +27,7 @@ export default function ScoreDisplay({
 }: {
   score: number;
   oldScore?: number;
+  animationDuration?: number;
   seatWind: Wind;
   difference?: number | null;
   onDifferenceStart?: () => void;
@@ -50,12 +52,12 @@ export default function ScoreDisplay({
     <div
       className={clsx(
         vertical
-          ? "flex h-full w-44 flex-row-reverse lg:w-65"
-          : "flex h-44 w-full flex-col lg:h-65",
+          ? "flex h-full w-34 flex-row-reverse lg:w-51"
+          : "flex h-34 w-full flex-col lg:h-51",
         "items-center justify-center gap-1",
       )}
     >
-      <div className={clsx("relative flex shrink-0 items-center justify-center", vertical ? "h-full w-20 lg:w-28" : "h-20 w-full lg:h-28")}>
+      <div className={clsx("relative flex shrink-0 items-center justify-center", vertical ? "h-full w-10 lg:w-14" : "h-10 w-full lg:h-14")}>
         <button
           data-riichi-button
           onClick={onRiichiClick}
@@ -120,7 +122,7 @@ export default function ScoreDisplay({
                   start={oldScore / 100}
                   end={score / 100}
                   map={hundredsToPoints}
-                  duration={1000}
+                  duration={animationDuration}
                   onDone={() => setAnimDone(true)}
                 />
               </H.Red>
@@ -131,7 +133,7 @@ export default function ScoreDisplay({
                   start={oldScore / 100}
                   end={score / 100}
                   map={hundredsToPoints}
-                  duration={1000}
+                  duration={animationDuration}
                   onDone={() => setAnimDone(true)}
                 />
               </H>

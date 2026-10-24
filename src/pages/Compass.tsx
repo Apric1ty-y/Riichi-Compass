@@ -97,7 +97,7 @@ function CompassWithGame({
     return () => observer.disconnect();
   }, [useFourWayCompass]);
   // Full-length riichi buttons need enough corner clearance on near-square screens.
-  const panelGroupThickness = window.innerWidth >= 1024 ? 260 : 176;
+  const panelGroupThickness = window.innerWidth >= 1024 ? 204 : 136;
   const cornerClearance = Math.max(viewportSize.width, viewportSize.height) - 0.8 * Math.min(viewportSize.width, viewportSize.height);
   const scale = Math.min(1, viewportSize.width / 600, viewportSize.height / 600, cornerClearance / (2 * panelGroupThickness + 12));
   const stageStyle = {
@@ -111,9 +111,14 @@ function CompassWithGame({
   const { roundWind, round, repeats, scores, riichi, riichiSticks, settings } =
     game;
 
-  const [oldScores, setOldScores] = useState<number[] | undefined>(
+  const [oldScores, updateOldScores] = useState<number[] | undefined>(
     locState.oldScores,
   );
+  const [animationDuration, setAnimationDuration] = useState(1000);
+  const setOldScores = (previous: number[]) => {
+    updateOldScores(previous);
+    setAnimationDuration(1000);
+  };
   const [scoreUpdater, setScoreUpdater] = useState<number | null>(null);
   const [winner, setWinner] = useState<number | null>(null);
   const [openDrawDialog, setOpenDrawDialog] = useState(false);
@@ -134,6 +139,7 @@ function CompassWithGame({
 
   const toggleRiichiStick = async (ix: number) => {
     setOldScores(scores.slice());
+    setAnimationDuration(300);
     if (riichi[ix]) {
       const scores_ = scores.slice();
       scores_[ix] = scores[ix] + 1000;
@@ -197,6 +203,7 @@ function CompassWithGame({
           <ScoreDisplayInCompass
             ix={0}
             oldScores={oldScores}
+            animationDuration={animationDuration}
             game={game}
             onScoreClick={() => setScoreUpdater(0)}
             onTileClick={() => setWinner(0)}
@@ -210,6 +217,7 @@ function CompassWithGame({
             vertical
             ix={1}
             oldScores={oldScores}
+            animationDuration={animationDuration}
             game={game}
             onScoreClick={() => setScoreUpdater(1)}
             onTileClick={() => setWinner(1)}
@@ -222,6 +230,7 @@ function CompassWithGame({
           <ScoreDisplayInCompass
             ix={2}
             oldScores={oldScores}
+            animationDuration={animationDuration}
             game={game}
             onScoreClick={() => setScoreUpdater(2)}
             onTileClick={() => setWinner(2)}
@@ -236,6 +245,7 @@ function CompassWithGame({
               vertical
               ix={3}
               oldScores={oldScores}
+              animationDuration={animationDuration}
               game={game}
               onScoreClick={() => setScoreUpdater(3)}
               onTileClick={() => setWinner(3)}
@@ -437,6 +447,7 @@ function CompassWithGame({
             <ScoreDisplayInCompass
               ix={0}
               oldScores={oldScores}
+              animationDuration={animationDuration}
               game={game}
               onScoreClick={() => setScoreUpdater(0)}
               onTileClick={() => setWinner(0)}
@@ -448,6 +459,7 @@ function CompassWithGame({
             <ScoreDisplayInCompass
               ix={1}
               oldScores={oldScores}
+              animationDuration={animationDuration}
               game={game}
               onScoreClick={() => setScoreUpdater(1)}
               onTileClick={() => setWinner(1)}
@@ -459,6 +471,7 @@ function CompassWithGame({
             <ScoreDisplayInCompass
               ix={2}
               oldScores={oldScores}
+              animationDuration={animationDuration}
               game={game}
               onScoreClick={() => setScoreUpdater(2)}
               onTileClick={() => setWinner(2)}
@@ -471,6 +484,7 @@ function CompassWithGame({
               <ScoreDisplayInCompass
                 ix={3}
                 oldScores={oldScores}
+                animationDuration={animationDuration}
                 game={game}
                 onScoreClick={() => setScoreUpdater(3)}
                 onTileClick={() => setWinner(3)}
@@ -554,6 +568,7 @@ function ScoreDisplayInCompass({
   game,
   ix,
   oldScores,
+  animationDuration,
   vertical = false,
   onScoreClick,
   onTileClick,
@@ -563,6 +578,7 @@ function ScoreDisplayInCompass({
   game: Game;
   ix: number;
   oldScores?: number[];
+  animationDuration?: number;
   vertical?: boolean;
   onScoreClick?: () => void;
   onTileClick?: () => void;
@@ -576,6 +592,7 @@ function ScoreDisplayInCompass({
       vertical={vertical}
       score={scores[ix]}
       oldScore={oldScores?.[ix]}
+      animationDuration={animationDuration}
       riichi={riichi[ix]}
       difference={referenceIndex == null || referenceIndex === ix ? null : scores[referenceIndex] - scores[ix]}
       onDifferenceStart={() => setReferenceIndex(ix)}
