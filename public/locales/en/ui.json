@@ -1,4 +1,9 @@
 {
+  "撤销上一次操作": "Undo Last Action",
+  "恢复上一步的点数、局数、本场、供托和统计记录？": "Restore the previous points, round, honba, riichi pool and statistics?",
+  "确认撤销": "Confirm Undo",
+  "取消": "Cancel",
+  "撤销失败，请重试。": "Could not undo. Please retry.",
   "查看玩家": "View Player",
   "对局已结束，是否保存到所有参与者的历史对局？": "The match has ended. Save it to every participant's history?",
   "保存历史对局": "Save Match History",

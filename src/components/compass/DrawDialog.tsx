@@ -12,7 +12,7 @@ import TileButton from "../calculator/TileButton";
 import CustomDialog from "../layout/CustomDialog";
 import HorizontalRow from "../layout/HorizontalRow";
 import { HTrans } from "../text/Localized";
-import ToggleOnOff from "../ToggleOnOff";
+import UndoButton from "./UndoButton";
 import ToggleThree from "../ToggleThree";
 
 export function DrawDialog({
@@ -39,11 +39,6 @@ export function DrawDialog({
   const [tenpaiPlayers, updateTenpaiPlayers] = useImmer(
     new Set<number>(game.riichi.flatMap((x, i) => (x ? [i] : []))),
   );
-  const [drawRepeat, setDrawRepeat] = useState(
-    playerIxes.some(
-      (i) => tenpaiPlayers.has(i) && nextWind(bottomWind, i, isSanma) === "1",
-    ),
-  );
   const [violationPlayer, setViolationPlayer] = useState<number>(0);
 
   const submitDraw = async () => {
@@ -63,7 +58,6 @@ export function DrawDialog({
         }
       }
       const repeat =
-        drawRepeat &&
         playerIxes.some(
           (i) =>
             tenpaiPlayers.has(i) && nextWind(bottomWind, i, isSanma) === "1",
@@ -152,9 +146,6 @@ export function DrawDialog({
                     dora={tenpaiPlayers.has(i)}
                     forced={game.riichi[i]}
                     onClick={() => {
-                      if (nextWind(bottomWind, i, isSanma) === "1") {
-                        setDrawRepeat(!tenpaiPlayers.has(i));
-                      }
                       updateTenpaiPlayers((s) => {
                         if (s.has(i)) {
                           s.delete(i);
@@ -166,12 +157,7 @@ export function DrawDialog({
                   />
                 ))}
               </HorizontalRow>
-              <ToggleOnOff
-                toggled={drawRepeat}
-                onToggle={(b) => setDrawRepeat(b)}
-              >
-                {t("compass.repeatRound")}
-              </ToggleOnOff>
+              <UndoButton gameId={gameId} game={game} onUndo={() => { onScoreUpdate(game.scores); onClose(); }} />
             </>
           )}
           {drawType === 2 && (

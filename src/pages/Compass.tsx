@@ -96,7 +96,10 @@ function CompassWithGame({
     observer.observe(viewportRef.current);
     return () => observer.disconnect();
   }, [useFourWayCompass]);
-  const scale = Math.min(1, viewportSize.width / 600, viewportSize.height / 600);
+  // Full-length riichi buttons need enough corner clearance on near-square screens.
+  const panelGroupThickness = window.innerWidth >= 1024 ? 260 : 176;
+  const cornerClearance = Math.max(viewportSize.width, viewportSize.height) - 0.8 * Math.min(viewportSize.width, viewportSize.height);
+  const scale = Math.min(1, viewportSize.width / 600, viewportSize.height / 600, cornerClearance / (2 * panelGroupThickness + 12));
   const stageStyle = {
     width: viewportSize.width / scale,
     height: viewportSize.height / scale,
@@ -130,6 +133,7 @@ function CompassWithGame({
   }, []);
 
   const toggleRiichiStick = async (ix: number) => {
+    setOldScores(scores.slice());
     if (riichi[ix]) {
       const scores_ = scores.slice();
       scores_[ix] = scores[ix] + 1000;
@@ -270,6 +274,7 @@ function CompassWithGame({
           gameId={locState.id}
           game={game}
           onEndGame={requestEnd}
+          onScoreUpdate={setOldScores}
           onClose={() => setOpenAdvancedDialog(false)}
         />
       )}
@@ -506,6 +511,7 @@ function CompassWithGame({
           gameId={locState.id}
           game={game}
           onEndGame={requestEnd}
+          onScoreUpdate={setOldScores}
           onClose={() => setOpenAdvancedDialog(false)}
         />
       )}

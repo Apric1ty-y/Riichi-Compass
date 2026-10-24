@@ -7,6 +7,7 @@ export type RepositoryProvider = () => IRepository;
 export interface IRepository {
   getGame: (id: string) => Promise<Option<Game>>;
   setGame: (id: string, game: Game) => Promise<void>;
+  undoGame: (id: string) => Promise<void>;
   useGame: (id: string, options?: { enabled: boolean }) => Option<Game> | null;
   archiveGame: (id: string) => Promise<void>;
   discardFinishedGame: (id: string) => Promise<void>;
@@ -21,6 +22,7 @@ export interface IRepository {
 }
 
 export interface Game {
+  undoAvailable?: boolean;
   initialBottomWind?: Wind;
   sessionId?: string;
   players?: PlayerIdentity[];

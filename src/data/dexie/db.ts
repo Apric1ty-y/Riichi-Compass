@@ -6,6 +6,7 @@ import { DefaultSettings, type ScoreSettings } from "../../lib/settings";
 import { normalizeMatch } from "../../lib/match";
 import { type Game, type HistoricMatch, type IRepository, type PartialGame } from "../interfaces";
 import { participantHistory } from "../../lib/history";
+import { operationChanged, restoreOperation } from "../../lib/undo";
 
 type Game_ = Game & {
   id: string;
@@ -88,6 +89,7 @@ function fromSettings(id: string, settings: ScoreSettings): ScoreSettings_ {
 }
 
 class Db extends Dexie {
+  public undo!: Table<{ id: string; sessionId?: string; snapshot: Game }>;
   public games!: Table<Game_>;
   public settings!: Table<ScoreSettings_>;
   public history!: Table<HistoricMatch>;
@@ -177,7 +179,18 @@ db.version(7).stores({ games: "++id", settings: "++id", history: "id, ownerId, e
   await table.bulkDelete(oldRecords.filter(record => !retainedIds.has(record.id)).map(record => record.id));
 });
 
+db.version(8).stores({ games: "++id", settings: "++id", history: "id, ownerId, endedAt", undo: "id" });
+
 export const repository: IRepository = {
+  async undoGame(id) {
+    await db.transaction("rw", db.games, db.undo, async () => {
+      const stored = await db.games.get(id);
+      const undo = await db.undo.get(id);
+      if (!stored || stored.endedAt || !undo || undo.sessionId !== stored.sessionId) throw new Error("No operation to undo");
+      await db.games.put(fromGame(id, restoreOperation(toGame(stored), undo.snapshot)));
+      await db.undo.delete(id);
+    });
+  },
   useHistory(ownerId) {
     return useLiveQuery(() => (ownerId == null ? db.history.toCollection() : db.history.where("ownerId").equals(ownerId)).reverse().sortBy("endedAt"), [ownerId]);
   },
@@ -222,10 +235,19 @@ export const repository: IRepository = {
     return some(toGame(game));
   },
   async setGame(id: string, game: Game): Promise<void> {
-    await db.transaction("rw", db.games, async () => {
+    await db.transaction("rw", db.games, db.undo, async () => {
       const stored = await db.games.get(id);
       const previous = stored && stored.sessionId === game.sessionId ? toGame(stored) : null;
       const next = normalizeMatch(game);
+      if (previous && !previous.endedAt && !next.endedAt) {
+        if (operationChanged(previous, next)) {
+          await db.undo.put({ id, sessionId: previous.sessionId, snapshot: previous });
+          next.undoAvailable = true;
+        } else next.undoAvailable = previous.undoAvailable ?? false;
+      } else {
+        await db.undo.delete(id);
+        next.undoAvailable = false;
+      }
       if (previous && !previous.endedAt) {
         const changed = previous.scores.some((score, i) => score !== next.scores[i]);
         const settled = previous.handSequence !== next.handSequence;

@@ -7,17 +7,20 @@ import Button from "../Button";
 import Counter from "../Counter";
 import CustomDialog from "../layout/CustomDialog";
 import useUiText from "../../hooks/useUiText";
+import UndoButton from "./UndoButton";
 
 export function AdvancedDialog({
   gameId,
   game,
   onClose,
   onEndGame,
+  onScoreUpdate,
 }: {
   gameId: string;
   game: Game;
   onClose: () => void;
   onEndGame: () => void;
+  onScoreUpdate: (scores: number[]) => void;
 }) {
   const { t } = useTranslation();
   const u = useUiText();
@@ -109,6 +112,7 @@ export function AdvancedDialog({
             })}
           </Counter>
         </div>
+        <UndoButton gameId={gameId} game={game} onUndo={() => { onScoreUpdate(game.scores); onClose(); }} />
         <Button onClick={onEndGame}>{u("结束对局")}</Button>
       </div>
     </CustomDialog>

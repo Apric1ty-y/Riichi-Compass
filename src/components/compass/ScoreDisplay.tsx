@@ -7,6 +7,9 @@ import TileButton from "../calculator/TileButton";
 import H from "../text/H";
 import useUiText from "../../hooks/useUiText";
 
+const hundredsToPoints = (value: number) => value * 100;
+const identity = (value: number) => value;
+
 export default function ScoreDisplay({
   score,
   oldScore = score,
@@ -47,19 +50,17 @@ export default function ScoreDisplay({
     <div
       className={clsx(
         vertical
-          ? "flex h-full w-39 flex-row-reverse lg:w-53"
-          : "flex h-39 w-full flex-col lg:h-53",
+          ? "flex h-full w-44 flex-row-reverse lg:w-65"
+          : "flex h-44 w-full flex-col lg:h-65",
         "items-center justify-center gap-1",
       )}
     >
-      <div className="justify-centers flex flex-row items-center gap-x-2">
+      <div className={clsx("relative flex shrink-0 items-center justify-center", vertical ? "h-full w-20 lg:w-28" : "h-20 w-full lg:h-28")}>
         <button
+          data-riichi-button
           onClick={onRiichiClick}
           className={clsx(
-            "flex items-center justify-center rounded-xl border border-gray-800 text-center text-lg font-semibold shadow md:text-xl lg:text-2xl",
-            vertical
-              ? "h-64 w-9 px-1.5 py-8 lg:h-104 lg:w-14"
-              : "h-9 w-64 px-8 py-1.5 lg:h-14 lg:w-104",
+            "flex h-full w-full items-center justify-center rounded-xl border border-gray-800 text-center text-2xl font-semibold shadow lg:text-3xl",
             riichi
               ? "bg-amber-500 enabled:hover:bg-amber-600 dark:bg-amber-700 dark:enabled:hover:bg-amber-800"
               : "bg-gray-50 enabled:hover:bg-gray-200 dark:bg-gray-500 dark:enabled:hover:bg-gray-600",
@@ -70,12 +71,13 @@ export default function ScoreDisplay({
           </span>
         </button>
         {playerLabel && (
-          <div className="rounded bg-slate-300 p-0.5 shadow lg:p-1 dark:bg-sky-900">
+          <div className="absolute top-1 right-1 rounded bg-slate-300 p-0.5 shadow lg:p-1 dark:bg-sky-900">
             <H>{playerLabel}</H>
           </div>
         )}
       </div>
       <div
+        data-score-panel
         className={clsx(
           vertical
             ? "flex h-full w-fit flex-col p-1.5 lg:px-4 lg:py-2"
@@ -114,9 +116,10 @@ export default function ScoreDisplay({
             ) : oldScore > score ? (
               <H.Red>
                 <AnimatedIncrement
+                  key={`${oldScore}:${score}`}
                   start={oldScore / 100}
                   end={score / 100}
-                  map={(x) => x * 100}
+                  map={hundredsToPoints}
                   duration={1000}
                   onDone={() => setAnimDone(true)}
                 />
@@ -124,9 +127,10 @@ export default function ScoreDisplay({
             ) : (
               <H>
                 <AnimatedIncrement
+                  key={`${oldScore}:${score}`}
                   start={oldScore / 100}
                   end={score / 100}
-                  map={(x) => x * 100}
+                  map={hundredsToPoints}
                   duration={1000}
                   onDone={() => setAnimDone(true)}
                 />
@@ -171,7 +175,7 @@ export default function ScoreDisplay({
 function AnimatedIncrement({
   start,
   end,
-  map = (x) => x,
+  map = identity,
   duration,
   onDone,
 }: {
@@ -181,22 +185,21 @@ function AnimatedIncrement({
   duration: number;
   onDone?: () => void;
 }) {
-  const [value, setValue] = useState(start);
-  const startTimestamp = useRef<number | null>(null);
-  const step = (timestamp: number) => {
-    if (!startTimestamp.current) startTimestamp.current = timestamp;
-    const progress = Math.min(
-      (timestamp - startTimestamp.current) / duration,
-      1,
-    );
-    setValue(map(Math.floor(progress * (end - start) + start)));
-    if (progress < 1) {
-      window.requestAnimationFrame(step);
-    } else {
-      onDone?.();
-    }
-  };
-  // eslint-disable-next-line react-hooks/refs
-  window.requestAnimationFrame(step);
+  const [value, setValue] = useState(() => map(start));
+  const onDoneRef = useRef(onDone);
+  useEffect(() => { onDoneRef.current = onDone; }, [onDone]);
+  useEffect(() => {
+    let frame: number;
+    let startTimestamp: number | undefined;
+    const step = (timestamp: number) => {
+      startTimestamp ??= timestamp;
+      const progress = duration <= 0 ? 1 : Math.min((timestamp - startTimestamp) / duration, 1);
+      setValue(map(progress === 1 ? end : Math.floor(progress * (end - start) + start)));
+      if (progress < 1) frame = window.requestAnimationFrame(step);
+      else onDoneRef.current?.();
+    };
+    frame = window.requestAnimationFrame(step);
+    return () => window.cancelAnimationFrame(frame);
+  }, [start, end, duration, map]);
   return <span>{value}</span>;
 }
