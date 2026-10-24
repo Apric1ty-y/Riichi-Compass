@@ -52,12 +52,12 @@ export default function ScoreDisplay({
     <div
       className={clsx(
         vertical
-          ? "flex h-full w-34 flex-row-reverse lg:w-51"
-          : "flex h-34 w-full flex-col lg:h-51",
+          ? "flex h-full w-38 flex-row-reverse lg:w-51"
+          : "flex h-38 w-full flex-col lg:h-51",
         "items-center justify-center gap-1",
       )}
     >
-      <div className={clsx("relative flex shrink-0 items-center justify-center", vertical ? "h-full w-10 lg:w-14" : "h-10 w-full lg:h-14")}>
+      <div className={clsx("relative flex shrink-0 items-center justify-center", vertical ? "h-full w-14" : "h-14 w-full")}>
         <button
           data-riichi-button
           onClick={onRiichiClick}

@@ -97,7 +97,7 @@ function CompassWithGame({
     return () => observer.disconnect();
   }, [useFourWayCompass]);
   // Full-length riichi buttons need enough corner clearance on near-square screens.
-  const panelGroupThickness = window.innerWidth >= 1024 ? 204 : 136;
+  const panelGroupThickness = window.innerWidth >= 1024 ? 204 : 152;
   const cornerClearance = Math.max(viewportSize.width, viewportSize.height) - 0.8 * Math.min(viewportSize.width, viewportSize.height);
   const scale = Math.min(1, viewportSize.width / 600, viewportSize.height / 600, cornerClearance / (2 * panelGroupThickness + 12));
   const stageStyle = {
